@@ -44,7 +44,7 @@ module "buyer" {
     {
       name      = "bidding-service"
       image     = "${local.image_registry}/${local.registry_path}/bidding-service:${local.image_tag}"
-      ccepolicy = "${file("../cce-policies/bidding.base64")}"
+      ccepolicy = "${file("../cce-policies/offer.base64")}"
       replicas  = 3
       resources = {
         requests = {
@@ -108,7 +108,7 @@ module "buyer" {
     {
       name      = "bfe"
       image     = "${local.image_registry}/${local.registry_path}/buyer-frontend-service:${local.image_tag}"
-      ccepolicy = "${file("../cce-policies/bfe.base64")}"
+      ccepolicy = "${file("../cce-policies/ofe.base64")}"
       replicas  = 3
       resources = {
         requests = {
@@ -144,31 +144,6 @@ module "buyer" {
         GRPC_ARG_DEFAULT_AUTHORITY                    = ""
         PROTECTED_APP_SIGNALS_GENERATE_BID_TIMEOUT_MS = "" # Example: "60000"
       }
-    },
-    {
-      name      = "k-anonymity-service"
-      image     = "${local.image_registry}/${local.registry_path}/k-anonymity-service:${local.image_tag}"
-      ccepolicy = "${file("../cce-policies/kanon.base64")}"
-      replicas  = 3
-      resources = {
-        requests = {
-          cpu    = "0.75"
-          memory = "2Gi"
-        }
-        limits = {
-          cpu    = "2"
-          memory = "8Gi"
-        }
-      }
-      runtime_flags = {
-        ENABLE_K_ANONYMITY_SERVICE_BENCHMARK                    = ""      # Example: "false"
-        K_ANONYMITY_HEALTHCHECK_PORT                            = "50543" # Do not change unless you are modifying the default Azure architecture.
-        K_ANONYMITY_PORT                                        = "50042" # Do not change unless you are modifying the default Azure architecture.
-        KANON_TCMALLOC_BACKGROUND_RELEASE_RATE_BYTES_PER_SECOND = ""      # Example: "4096"
-        KANON_TCMALLOC_MAX_TOTAL_THREAD_CACHE_BYTES             = ""      # Example: "10737418240"
-        REPLICA_REFRESH_INTERVAL_MIN                            = "60"    # Example: "60"
-        TEE_REPLICA_K_ANONYMITY_HOST_ADDR                       = ""      # Example: "localhost:50040"
-      }
     }
   ]
   global_runtime_flags = {
@@ -189,8 +164,6 @@ module "buyer" {
     INFERENCE_MODEL_FETCH_PERIOD_MS    = "" # Example: "60000"
     INFERENCE_MODEL_LOCAL_PATHS        = ""
     INFERENCE_SIDECAR_BINARY_PATH      = ""
-    K_ANONYMITY_SERVER_ADDR            = "k-anonymity-service.ad_selection.microsoft:50042" # Do not change unless you are modifying the default Azure architecture.
-    K_ANONYMITY_SERVER_TIMEOUT_MS      = "60000"
     KV_SERVER_EGRESS_TLS               = ""
     MAX_ALLOWED_SIZE_DEBUG_URL_BYTES   = "" # Example: "65536"
     MAX_ALLOWED_SIZE_ALL_DEBUG_URLS_KB = "" # Example: "3000"
