@@ -142,6 +142,28 @@ module "offer" {
         GRPC_ARG_DEFAULT_AUTHORITY                    = ""
         PROTECTED_APP_SIGNALS_GENERATE_BID_TIMEOUT_MS = "60000"
       }
+    },
+    {
+      name      = "kv"
+      image     = "${local.image_registry}/${local.registry_path}/key-value-service:${local.image_tag}"
+      ccepolicy = "${file("../cce-policies/kv.base64")}"
+      replicas  = 1
+      resources = {
+        requests = {
+          cpu    = "0.75"
+          memory = "2Gi"
+        }
+        limits = {
+          cpu    = "2"
+          memory = "8Gi"
+        }
+      }
+      runtime_flags = {
+        PORT                          = "50051"          # Do not change unless you are modifying the default Azure architecture.
+        HEALTHCHECK_PORT              = "50051"          # Do not change unless you are modifying the default Azure architecture.
+        AZURE_LOCAL_DATA_DIR          = "/data/deltas"   # Do not change unless you are modifying the default Azure architecture.
+        AZURE_LOCAL_REALTIME_DATA_DIR = "/data/realtime" # Do not change unless you are modifying the default Azure architecture.
+      }
     }
   ]
   global_runtime_flags = {
@@ -149,7 +171,7 @@ module "offer" {
     AD_RETRIEVAL_KV_SERVER_EGRESS_TLS  = ""
     AD_RETRIEVAL_TIMEOUT_MS            = "60000"
     BUYER_EGRESS_TLS                   = ""
-    COLLECTOR_ENDPOINT                 = "127.0.0.1:4317"
+    COLLECTOR_ENDPOINT                 = "otel-collector-service.ad_selection.microsoft:4317"
     CONSENTED_DEBUG_TOKEN              = "test-token" # Example: "test-token"
     ENABLE_AUCTION_COMPRESSION         = "false"      # Example: "false"
     ENABLE_BUYER_COMPRESSION           = "false"      # Example: "false"
