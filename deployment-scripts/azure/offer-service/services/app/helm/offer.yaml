@@ -72,24 +72,6 @@ services:
       GENERATE_BID_TIMEOUT_MS: ""
       GRPC_ARG_DEFAULT_AUTHORITY: ""
       PROTECTED_APP_SIGNALS_GENERATE_BID_TIMEOUT_MS: ""
-  k-anonymity-service:
-    replicas: 1
-    image: "mcr.microsoft.com/ad-selection/azure/k-anonymity-service:prod-4.3.0.0"
-    containerPorts:
-      - name: grpc
-        port: 50042
-    healthCheck: {}
-    resources: {}
-    internalLB: true
-    nodeSelector: {}
-    env:
-      ENABLE_K_ANONYMITY_SERVICE_BENCHMARK: ""
-      K_ANONYMITY_HEALTHCHECK_PORT: ""
-      K_ANONYMITY_PORT: ""
-      KANON_TCMALLOC_BACKGROUND_RELEASE_RATE_BYTES_PER_SECOND: ""
-      KANON_TCMALLOC_MAX_TOTAL_THREAD_CACHE_BYTES: ""
-      REPLICA_REFRESH_INTERVAL_MIN: ""
-      TEE_REPLICA_K_ANONYMITY_HOST_ADDR: ""
 env:
   AD_RETRIEVAL_KV_SERVER_ADDR: ""
   AD_RETRIEVAL_KV_SERVER_EGRESS_TLS: ""
