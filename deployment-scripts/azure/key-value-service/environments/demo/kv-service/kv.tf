@@ -17,7 +17,7 @@ locals {
   operator    = "tf"
 
   # Please refer to https://github.com/claranet/terraform-azurerm-regions/blob/master/REGIONS.md for region codes. Check the "Region Deployments" section in https://github.com/microsoft/virtualnodesOnAzureContainerInstances for regions that support confidential pods.
-  region = "westus"
+  region = "northeurope"
 
   subscription_id = "<your_subscription_id>"
   tenant_id       = "<your_tenant_id>"
