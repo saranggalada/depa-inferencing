@@ -22,9 +22,9 @@ locals {
   subscription_id = "<your_subscription_id>"
   tenant_id       = "<your_tenant_id>"
 
-  image_registry = "mcr.microsoft.com"
-  registry_path  = "ad-selection/azure"
-  image_tag      = "prod-4.3.0.0"
+  image_registry = "ispirt.azurecr.io"
+  registry_path  = "depa-inferencing/azure"
+  image_tag      = "nonprod-4.3.0.0"
 }
 
 module "offer" {
