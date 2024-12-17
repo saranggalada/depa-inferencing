@@ -25,7 +25,7 @@ locals {
   image_registry = "ispirt.azurecr.io"
   registry_path  = "depa-inferencing/azure"
   image_tag      = "nonprod-4.3.0.0"
-  kms_url        = "https://azure.microsoftbrowsertrust.com"
+  kms_url        = "https://kapilv-sandbox-kms.northeurope.azurecontainer.io:8000"
 }
 
 module "offer" {
@@ -66,37 +66,34 @@ module "offer" {
         BIDDING_TCMALLOC_BACKGROUND_RELEASE_RATE_BYTES_PER_SECOND = "4096"        # Example: "4096"
         BIDDING_TCMALLOC_MAX_TOTAL_THREAD_CACHE_BYTES             = "10737418240" # Example: "10737418240"
 
-        BUYER_CODE_FETCH_CONFIG = "" # Example:
-        # " ${replace(jsonencode(
-        #   {
-        #     fetchMode                               = 0,
-        #     biddingJsPath                           = "",
-        #     biddingJsUrl                            = "https://bidding.js.example.com/generateBid.js",
-        #     protectedAppSignalsBiddingJsUrl         = "https://bidding.signals.js.example.com/generateBid.js",
-        #     biddingWasmHelperUrl                    = "",
-        #     protectedAppSignalsBiddingWasmHelperUrl = "",
-        #     urlFetchPeriodMs                        = 13000000,
-        #     urlFetchTimeoutMs                       = 120000,
-        #     enableBuyerDebugUrlGeneration           = true,
-        #     enableAdtechCodeLogging                 = false,
-        #     prepareDataForAdsRetrievalJsUrl         = "",
-        #     prepareDataForAdsRetrievalWasmHelperUrl = ""
-        # }), ",", "\\,")}" # Escape commas in JSON. A known limitation in the Helm --set flag. https://github.com/hashicorp/terraform-provider-helm/issues/618
-        EGRESS_SCHEMA_FETCH_CONFIG = "" # Example:
-        # " ${replace(jsonencode(
-        #   {
-        #     fetchMode         = 0,
-        #     egressSchemaUrl   = "https://example.com/egressSchema.json",
-        #     urlFetchPeriodMs  = 130000,
-        #     urlFetchTimeoutMs = 30000
-        # }), ",", "\\,")}" # Escape commas in JSON. A known limitation in the Helm --set flag. https://github.com/hashicorp/terraform-provider-helm/issues/618
-        ENABLE_BIDDING_SERVICE_BENCHMARK = "" # Example: "false"
-        INFERENCE_SIDECAR_RUNTIME_CONFIG = "" # Example:
-        # "{
-        #    "num_interop_threads": 4,
-        #    "num_intraop_threads": 4,
-        #    "module_name": "tensorflow_v2_14_0",
-        # }"
+        BUYER_CODE_FETCH_CONFIG = " ${replace(jsonencode(
+        {
+          fetchMode                               = 0,
+          biddingJsPath                           = "",
+          biddingJsUrl                            = "https://raw.githubusercontent.com/KenGordon/bidding-auction-servers/refs/heads/kapilv/generate-bid/fetchAdditionalSignals.js",
+          protectedAppSignalsBiddingJsUrl         = "https://raw.githubusercontent.com/KenGordon/bidding-auction-servers/refs/heads/kapilv/generate-bid/fetchAdditionalSignals.js",
+          biddingWasmHelperUrl                    = "",
+          protectedAppSignalsBiddingWasmHelperUrl = "",
+          urlFetchPeriodMs                        = 13000000,
+          urlFetchTimeoutMs                       = 120000,
+          enableBuyerDebugUrlGeneration           = true,
+          enableAdtechCodeLogging                 = true,
+          prepareDataForAdsRetrievalJsUrl         = "",
+          prepareDataForAdsRetrievalWasmHelperUrl = ""
+        }), ",", "\\,")}" # Escape commas in JSON. A known limitation in the Helm --set flag. https://github.com/hashicorp/terraform-provider-helm/issues/618
+        EGRESS_SCHEMA_FETCH_CONFIG = " ${replace(jsonencode(
+        {
+          fetchMode         = 0,
+          egressSchemaUrl   = "https://example.com/egressSchema.json",
+          urlFetchPeriodMs  = 130000,
+          urlFetchTimeoutMs = 30000
+        }), ",", "\\,")}" # Escape commas in JSON. A known limitation in the Helm --set flag. https://github.com/hashicorp/terraform-provider-helm/issues/618
+        ENABLE_BIDDING_SERVICE_BENCHMARK = "false"
+        INFERENCE_SIDECAR_RUNTIME_CONFIG = "${jsonencode({
+           "num_interop_threads": 4,
+           "num_intraop_threads": 4,
+           "module_name": "tensorflow_v2_14_0",
+        })}"
         UDF_NUM_WORKERS                                       = "4"   # Example: "64" Must be <= resources.limit.cpu container
         JS_WORKER_QUEUE_LEN                                   = "100" # Example: "200"
         SELECTION_KV_SERVER_ADDR                              = ""
@@ -109,7 +106,7 @@ module "offer" {
     {
       name      = "ofe"
       image     = "${local.image_registry}/${local.registry_path}/buyer-frontend-service:${local.image_tag}"
-      ccepolicy = "${file("../cce-policies/bfe.base64")}"
+      ccepolicy = "${file("../cce-policies/ofe.base64")}"
       replicas  = 3
       resources = {
         requests = {
@@ -133,26 +130,26 @@ module "offer" {
         BFE_TLS_KEY                                   = ""
         BIDDING_EGRESS_TLS                            = ""
         BIDDING_SERVER_ADDR                           = "bidding-service.ad_selection.microsoft:50057" # Do not change this unless you are modifying the bidding service
-        BIDDING_SIGNALS_LOAD_TIMEOUT_MS               = ""                                             # Example: "60000"
+        BIDDING_SIGNALS_LOAD_TIMEOUT_MS               = "60000"
         BUYER_FRONTEND_HEALTHCHECK_PORT               = "50552"                                        # Do not change unless you are modifying the default Azure architecture.
         BUYER_FRONTEND_PORT                           = "50051"                                        # Do not change unless you are modifying the default Azure architecture.
-        BUYER_KV_SERVER_ADDR                          = ""                                             # Example: "https://wonderful-smoke-f7f0a95bd29f428f8933d258d315c801.azurewebsites.net"
-        BYOS_AD_RETRIEVAL_SERVER                      = ""                                             # Example: "false"
-        CREATE_NEW_EVENT_ENGINE                       = ""                                             # Example: "false"
-        ENABLE_BIDDING_COMPRESSION                    = ""                                             # Example: "false"
-        ENABLE_BUYER_FRONTEND_BENCHMARKING            = ""                                             # Example: "false"
-        GENERATE_BID_TIMEOUT_MS                       = ""                                             # Example: "60000"
+        BUYER_KV_SERVER_ADDR                          = "https://wonderful-smoke-f7f0a95bd29f428f8933d258d315c801.azurewebsites.net"
+        BYOS_AD_RETRIEVAL_SERVER                      = "false"
+        CREATE_NEW_EVENT_ENGINE                       = "false"
+        ENABLE_BIDDING_COMPRESSION                    = "false"
+        ENABLE_BUYER_FRONTEND_BENCHMARKING            = "false"
+        GENERATE_BID_TIMEOUT_MS                       = "60000"
         GRPC_ARG_DEFAULT_AUTHORITY                    = ""
-        PROTECTED_APP_SIGNALS_GENERATE_BID_TIMEOUT_MS = "" # Example: "60000"
+        PROTECTED_APP_SIGNALS_GENERATE_BID_TIMEOUT_MS = "60000"
       }
     }
   ]
   global_runtime_flags = {
     AD_RETRIEVAL_KV_SERVER_ADDR        = ""
     AD_RETRIEVAL_KV_SERVER_EGRESS_TLS  = ""
-    AD_RETRIEVAL_TIMEOUT_MS            = "" # Example: "60000"
+    AD_RETRIEVAL_TIMEOUT_MS            = "60000"
     BUYER_EGRESS_TLS                   = ""
-    COLLECTOR_ENDPOINT                 = ""           # Example: "127.0.0.1:4317"
+    COLLECTOR_ENDPOINT                 = "127.0.0.1:4317"
     CONSENTED_DEBUG_TOKEN              = "test-token" # Example: "test-token"
     ENABLE_AUCTION_COMPRESSION         = "false"      # Example: "false"
     ENABLE_BUYER_COMPRESSION           = "false"      # Example: "false"
@@ -162,20 +159,22 @@ module "offer" {
     INFERENCE_MODEL_BUCKET_NAME        = ""
     INFERENCE_MODEL_BUCKET_PATHS       = ""
     INFERENCE_MODEL_CONFIG_PATH        = ""
-    INFERENCE_MODEL_FETCH_PERIOD_MS    = "" # Example: "60000"
+    INFERENCE_MODEL_FETCH_PERIOD_MS    = "60000"
     INFERENCE_MODEL_LOCAL_PATHS        = ""
     INFERENCE_SIDECAR_BINARY_PATH      = ""
+    K_ANONYMITY_SERVER_ADDR            = "" # Do not change unless you are modifying the default Azure architecture.
+    K_ANONYMITY_SERVER_TIMEOUT_MS      = "60000"
     KV_SERVER_EGRESS_TLS               = ""
-    MAX_ALLOWED_SIZE_DEBUG_URL_BYTES   = "" # Example: "65536"
-    MAX_ALLOWED_SIZE_ALL_DEBUG_URLS_KB = "" # Example: "3000"
-    PS_VERBOSITY                       = "" # Example: "10"
+    MAX_ALLOWED_SIZE_DEBUG_URL_BYTES   = "65536"
+    MAX_ALLOWED_SIZE_ALL_DEBUG_URLS_KB = "3000"
+    PS_VERBOSITY                       = "10"
     ROMA_TIMEOUT_MS                    = ""
     SELECTION_KV_SERVER_ADDR           = ""
     SELECTION_KV_SERVER_EGRESS_TLS     = ""
-    SELECTION_KV_SERVER_TIMEOUT_MS     = "" # Example: "60000"
+    SELECTION_KV_SERVER_TIMEOUT_MS     = "60000"
     TEE_AD_RETRIEVAL_KV_SERVER_ADDR    = ""
     TEE_KV_SERVER_ADDR                 = ""
-    TELEMETRY_CONFIG                   = "" # Example: "mode: EXPERIMENT"
+    TELEMETRY_CONFIG                   = "mode: EXPERIMENT"
 
     AZURE_BA_PARAM_GET_TOKEN_URL             = "http://169.254.169.254/metadata/identity/oauth2/token"
     AZURE_BA_PARAM_KMS_UNWRAP_URL            = "${local.kms_url}/app/unwrapKey?fmt=tink"
