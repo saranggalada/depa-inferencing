@@ -23,8 +23,24 @@ resource "azurerm_storage_account" "this" {
   account_replication_type = "LRS"
 }
 
-resource "azurerm_storage_share" "this" {
+resource "azurerm_storage_share" "data" {
   name                 = "data"
   storage_account_name = azurerm_storage_account.this.name
   quota                = 5120
+}
+
+resource "azurerm_storage_share" "fxlogic" {
+  name                 = "fslogix"
+  storage_account_name = azurerm_storage_account.this.name
+  quota                = 5120
+}
+
+resource "azurerm_storage_share_directory" "deltas" {
+  name             = "deltas"
+  storage_share_id = azurerm_storage_share.fxlogic.id
+}
+
+resource "azurerm_storage_share_directory" "realtime" {
+  name             = "realtime"
+  storage_share_id = azurerm_storage_share.fxlogic.id
 }

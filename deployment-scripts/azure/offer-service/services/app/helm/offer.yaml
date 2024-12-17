@@ -72,6 +72,24 @@ services:
       GENERATE_BID_TIMEOUT_MS: ""
       GRPC_ARG_DEFAULT_AUTHORITY: ""
       PROTECTED_APP_SIGNALS_GENERATE_BID_TIMEOUT_MS: ""
+  kv:
+    replicas: 1
+    image: "ispirt.azurecr.io/depa-inferencing/azure/key-value-service:nonprod-1.0.0.0"
+    containerPorts:
+      - name: grpc
+        port: 50051
+    healthCheck: {}
+    resources: {}
+    nodeSelector: {}
+    volumeName: "data-vol"
+    volumeMounts:
+      - name: data-vol
+        mountPath: /data
+    env:
+      PORT: ""
+      HEALTHCHECK_PORT: ""
+      AZURE_LOCAL_DATA_DIR: ""
+      AZURE_LOCAL_REALTIME_DATA_DIR: ""
 env:
   AD_RETRIEVAL_KV_SERVER_ADDR: ""
   AD_RETRIEVAL_KV_SERVER_EGRESS_TLS: ""

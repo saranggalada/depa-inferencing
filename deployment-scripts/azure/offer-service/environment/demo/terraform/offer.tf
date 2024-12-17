@@ -195,7 +195,7 @@ module "offer" {
     SELECTION_KV_SERVER_EGRESS_TLS     = ""
     SELECTION_KV_SERVER_TIMEOUT_MS     = "60000"
     TEE_AD_RETRIEVAL_KV_SERVER_ADDR    = ""
-    TEE_KV_SERVER_ADDR                 = ""
+    TEE_KV_SERVER_ADDR                 = "kv-service.ad_selection.microsoft:50051"
     TELEMETRY_CONFIG                   = "mode: EXPERIMENT"
 
     AZURE_BA_PARAM_GET_TOKEN_URL             = "http://169.254.169.254/metadata/identity/oauth2/token"
