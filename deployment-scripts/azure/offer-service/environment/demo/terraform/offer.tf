@@ -25,6 +25,7 @@ locals {
   image_registry = "ispirt.azurecr.io"
   registry_path  = "depa-inferencing/azure"
   image_tag      = "nonprod-4.3.0.0"
+  kms_url        = "https://azure.microsoftbrowsertrust.com"
 }
 
 module "offer" {
@@ -177,17 +178,17 @@ module "offer" {
     TELEMETRY_CONFIG                   = "" # Example: "mode: EXPERIMENT"
 
     AZURE_BA_PARAM_GET_TOKEN_URL             = "http://169.254.169.254/metadata/identity/oauth2/token"
-    AZURE_BA_PARAM_KMS_UNWRAP_URL            = "https://azure.microsoftbrowsertrust.com/app/unwrapKey?fmt=tink"
+    AZURE_BA_PARAM_KMS_UNWRAP_URL            = "${kms_url}/app/unwrapKey?fmt=tink"
     ENABLE_PROTECTED_AUDIENCE                = "true"
     KEY_REFRESH_FLOW_RUN_FREQUENCY_SECONDS   = "10800"
     PRIMARY_COORDINATOR_ACCOUNT_IDENTITY     = ""
-    PRIMARY_COORDINATOR_PRIVATE_KEY_ENDPOINT = "https://azure.microsoftbrowsertrust.com/app/key?fmt=tink"
+    PRIMARY_COORDINATOR_PRIVATE_KEY_ENDPOINT = "${kms_url}/app/key?fmt=tink"
     PRIMARY_COORDINATOR_REGION               = ""
     PRIVATE_KEY_CACHE_TTL_SECONDS            = "3888000"
-    PUBLIC_KEY_ENDPOINT                      = "https://azure.microsoftbrowsertrust.com/app/listpubkeys"
+    PUBLIC_KEY_ENDPOINT                      = "${kms_url}/app/listpubkeys"
     SFE_PUBLIC_KEYS_ENDPOINTS = " ${replace(jsonencode(
       {
-        AZURE = "https://azure.microsoftbrowsertrust.com/app/listpubkeys"
+        AZURE = "${kms_url}/app/listpubkeys"
       }),
     ",", "\\,")}"
     TEST_MODE = "false"

@@ -25,6 +25,7 @@ locals {
   image_registry = "ispirt.azurecr.io"
   registry_path  = "depa-inferencing/azure"
   image_tag      = "nonprod-1.0.0.0"
+  kms_url        = "https://azure.microsoftbrowsertrust.com"
 }
 
 module "kv-service" {
@@ -72,9 +73,9 @@ module "kv-service" {
     PS_VERBOSITY                             = "5"                # Example: "10"
     TELEMETRY_CONFIG                         = "mode: EXPERIMENT" # Example: "mode: EXPERIMENT"
     AZURE_BA_PARAM_GET_TOKEN_URL             = "http://169.254.169.254/metadata/identity/oauth2/token"
-    PUBLIC_KEY_ENDPOINT                      = "https://azure.microsoftbrowsertrust.com/app/listpubkeys"
-    PRIMARY_COORDINATOR_PRIVATE_KEY_ENDPOINT = "https://azure.microsoftbrowsertrust.com/app/key?fmt=tink"
-    AZURE_BA_PARAM_KMS_UNWRAP_URL            = "https://azure.microsoftbrowsertrust.com/app/unwrapKey?fmt=tink"
+    PUBLIC_KEY_ENDPOINT                      = "${kms_url}/app/listpubkeys"
+    PRIMARY_COORDINATOR_PRIVATE_KEY_ENDPOINT = "${kms_url}/app/key?fmt=tink"
+    AZURE_BA_PARAM_KMS_UNWRAP_URL            = "${kms_url}/app/unwrapKey?fmt=tink"
   }
 
 }
