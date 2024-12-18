@@ -17,14 +17,15 @@ locals {
   operator    = "tf"
 
   # Please refer to https://github.com/claranet/terraform-azurerm-regions/blob/master/REGIONS.md for region codes. Check the "Region Deployments" section in https://github.com/microsoft/virtualnodesOnAzureContainerInstances for regions that support confidential pods.
-  region = "westus"
+  region = "northeurope"
 
   subscription_id = "<your_subscription_id>"
   tenant_id       = "<your_tenant_id>"
 
-  image_registry = "mcr.microsoft.com"
-  registry_path  = "ad-selection/azure"
-  image_tag      = "prod-1.0.0.0"
+  image_registry = "ispirt.azurecr.io"
+  registry_path  = "depa-inferencing/azure"
+  image_tag      = "nonprod-1.0.0.0"
+  kms_url        = "https://azure.microsoftbrowsertrust.com"
 }
 
 module "kv-service" {
@@ -72,9 +73,9 @@ module "kv-service" {
     PS_VERBOSITY                             = "5"                # Example: "10"
     TELEMETRY_CONFIG                         = "mode: EXPERIMENT" # Example: "mode: EXPERIMENT"
     AZURE_BA_PARAM_GET_TOKEN_URL             = "http://169.254.169.254/metadata/identity/oauth2/token"
-    PUBLIC_KEY_ENDPOINT                      = "https://azure.microsoftbrowsertrust.com/app/listpubkeys"
-    PRIMARY_COORDINATOR_PRIVATE_KEY_ENDPOINT = "https://azure.microsoftbrowsertrust.com/app/key?fmt=tink"
-    AZURE_BA_PARAM_KMS_UNWRAP_URL            = "https://azure.microsoftbrowsertrust.com/app/unwrapKey?fmt=tink"
+    PUBLIC_KEY_ENDPOINT                      = "${local.kms_url}/app/listpubkeys"
+    PRIMARY_COORDINATOR_PRIVATE_KEY_ENDPOINT = "${local.kms_url}/app/key?fmt=tink"
+    AZURE_BA_PARAM_KMS_UNWRAP_URL            = "${local.kms_url}/app/unwrapKey?fmt=tink"
   }
 
 }
