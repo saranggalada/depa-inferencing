@@ -96,14 +96,14 @@ resource "helm_release" "ba_services" {
     for_each = var.containers
     content {
       name  = "services.${set.value.name}.containerPorts[0].port"
-      value = coalesce(lookup(set.value["runtime_flags"], "BIDDING_PORT", ""), lookup(set.value["runtime_flags"], "BUYER_FRONTEND_PORT", ""), lookup(set.value["runtime_flags"], "K_ANONYMITY_PORT", ""), lookup(set.value["runtime_flags"], "AUCTION_PORT", ""), lookup(set.value["runtime_flags"], "SELLER_FRONTEND_PORT", ""))
+      value = coalesce(lookup(set.value["runtime_flags"], "BIDDING_PORT", ""), lookup(set.value["runtime_flags"], "BUYER_FRONTEND_PORT", ""), lookup(set.value["runtime_flags"], "KV_PORT", ""), lookup(set.value["runtime_flags"], "AUCTION_PORT", ""), lookup(set.value["runtime_flags"], "SELLER_FRONTEND_PORT", ""))
     }
   }
   dynamic "set" {
     for_each = var.containers
     content {
       name  = "services.${set.value.name}.healthCheck.port"
-      value = coalesce(lookup(set.value["runtime_flags"], "BIDDING_HEALTHCHECK_PORT", ""), lookup(set.value["runtime_flags"], "BUYER_FRONTEND_HEALTHCHECK_PORT", ""), lookup(set.value["runtime_flags"], "K_ANONYMITY_HEALTHCHECK_PORT", ""), lookup(set.value["runtime_flags"], "AUCTION_HEALTHCHECK_PORT", ""), lookup(set.value["runtime_flags"], "SELLER_FRONTEND_HEALTHCHECK_PORT", ""))
+      value = coalesce(lookup(set.value["runtime_flags"], "BIDDING_HEALTHCHECK_PORT", ""), lookup(set.value["runtime_flags"], "BUYER_FRONTEND_HEALTHCHECK_PORT", ""), lookup(set.value["runtime_flags"], "KV_HEALTHCHECK_PORT", ""), lookup(set.value["runtime_flags"], "AUCTION_HEALTHCHECK_PORT", ""), lookup(set.value["runtime_flags"], "SELLER_FRONTEND_HEALTHCHECK_PORT", ""))
     }
   }
 

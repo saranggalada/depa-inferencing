@@ -25,9 +25,6 @@ services:
     resources: {}
     internalLB: true
     nodeSelector: {}
-    volumeMounts:
-      - name: data-vol
-        mountPath: /data
     env:
       BIDDING_HEALTHCHECK_PORT: ""
       BIDDING_PORT: ""

@@ -129,7 +129,7 @@ module "offer" {
         BFE_TLS_CERT                                  = ""
         BFE_TLS_KEY                                   = ""
         BIDDING_EGRESS_TLS                            = ""
-        BIDDING_SERVER_ADDR                           = "bidding-service.ad_selection.microsoft:50057" # Do not change this unless you are modifying the bidding service
+        BIDDING_SERVER_ADDR                           = "offer-service.ad_selection.microsoft:50057" # Do not change this unless you are modifying the bidding service
         BIDDING_SIGNALS_LOAD_TIMEOUT_MS               = "60000"
         BUYER_FRONTEND_HEALTHCHECK_PORT               = "50552"                                        # Do not change unless you are modifying the default Azure architecture.
         BUYER_FRONTEND_PORT                           = "50051"                                        # Do not change unless you are modifying the default Azure architecture.
@@ -195,7 +195,7 @@ module "offer" {
     SELECTION_KV_SERVER_EGRESS_TLS     = ""
     SELECTION_KV_SERVER_TIMEOUT_MS     = "60000"
     TEE_AD_RETRIEVAL_KV_SERVER_ADDR    = ""
-    TEE_KV_SERVER_ADDR                 = "kv-service.ad_selection.microsoft:50051"
+    TEE_KV_SERVER_ADDR                 = "kv.ad_selection.microsoft:50051"
     TELEMETRY_CONFIG                   = "mode: EXPERIMENT"
 
     AZURE_BA_PARAM_GET_TOKEN_URL             = "http://169.254.169.254/metadata/identity/oauth2/token"
