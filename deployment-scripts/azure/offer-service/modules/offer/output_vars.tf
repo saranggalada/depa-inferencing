@@ -15,3 +15,7 @@
 output "user_assigned_identity_principal_id" {
   value = module.aks.user_assigned_identity_principal_id
 }
+
+output "storage_share_id" {
+  value = module.storage_account.file_share_id
+}

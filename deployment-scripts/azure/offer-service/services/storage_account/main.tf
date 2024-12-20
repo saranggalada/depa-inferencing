@@ -24,7 +24,17 @@ resource "azurerm_storage_account" "this" {
 }
 
 resource "azurerm_storage_share" "this" {
-  name                 = "data"
+  name                 = "fslogix"
   storage_account_name = azurerm_storage_account.this.name
   quota                = 5120
+}
+
+resource "azurerm_storage_share_directory" "deltas" {
+  name             = "deltas"
+  storage_share_id = azurerm_storage_share.this.id
+}
+
+resource "azurerm_storage_share_directory" "realtime" {
+  name             = "realtime"
+  storage_share_id = azurerm_storage_share.this.id
 }
