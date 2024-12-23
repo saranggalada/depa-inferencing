@@ -160,8 +160,8 @@ module "offer" {
         }
       }
       runtime_flags = {
-        PORT                          = "50051"          # Do not change unless you are modifying the default Azure architecture.
-        HEALTHCHECK_PORT              = "50051"          # Do not change unless you are modifying the default Azure architecture.
+        KV_PORT                       = "50051"          # Do not change unless you are modifying the default Azure architecture.
+        KV_HEALTHCHECK_PORT           = "50051"          # Do not change unless you are modifying the default Azure architecture.
         AZURE_LOCAL_DATA_DIR          = "/data/deltas"   # Do not change unless you are modifying the default Azure architecture.
         AZURE_LOCAL_REALTIME_DATA_DIR = "/data/realtime" # Do not change unless you are modifying the default Azure architecture.
       }
