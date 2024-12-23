@@ -22,10 +22,11 @@ locals {
   subscription_id = "<your_subscription_id>"
   tenant_id       = "<your_tenant_id>"
 
-  image_registry = "ispirt.azurecr.io"
+  image_registry = "kapilvaswani"
   registry_path  = "depa-inferencing/azure"
-  image_tag      = "nonprod-4.3.0.0"
-  kms_url        = "https://kapilv-sandbox-kms.northeurope.azurecontainer.io:8000"
+  image_tag      = "prod-4.3.0.0"
+  kv_image_tag   = "prod-1.0.0.0"
+  kms_url        = "https://depa-inferencing-kms.northeurope.azurecontainer.io:8000"
 }
 
 module "offer" {
@@ -44,7 +45,7 @@ module "offer" {
   containers = [
     {
       name      = "offer-service"
-      image     = "${local.image_registry}/${local.registry_path}/bidding-service:${local.image_tag}"
+      image     = "${local.image_registry}/bidding-service:${local.image_tag}"
       ccepolicy = "${file("../cce-policies/offer.base64")}"
       replicas  = 3
       resources = {
@@ -105,7 +106,7 @@ module "offer" {
     },
     {
       name      = "ofe"
-      image     = "${local.image_registry}/${local.registry_path}/buyer-frontend-service:${local.image_tag}"
+      image     = "${local.image_registry}/buyer-frontend-service:${local.image_tag}"
       ccepolicy = "${file("../cce-policies/ofe.base64")}"
       replicas  = 3
       resources = {
@@ -145,7 +146,7 @@ module "offer" {
     },
     {
       name      = "kv"
-      image     = "${local.image_registry}/${local.registry_path}/key-value-service:${local.image_tag}"
+      image     = "${local.image_registry}/key-value-service:${local.kv_image_tag}"
       ccepolicy = "${file("../cce-policies/kv.base64")}"
       replicas  = 1
       resources = {
