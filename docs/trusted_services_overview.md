@@ -134,10 +134,10 @@ The response is encrypted  with a [key material and nonce derived from HPKE cont
 
 Each DEPA inferencing service is hosted in a secure virtual machine (TEE). Secure virtual machines run on physical hosts powered by secure hardware processors. 
 
-The FLEDGE service sends requests to the key management system to fetch private keys and public keys at service bootstrap. Before such keys are granted to the service, measurements of the DEPA inferencing service binaries and guest operating system running on the virtual machine are validated against a hash of the open source image; this validation process is termed an attestation.
+The DEPA inferencing service sends requests to the key management system to fetch private keys and public keys at service bootstrap. Before such keys are granted to the service, measurements of the DEPA inferencing service binaries and guest operating system running on the virtual machine are validated against a hash of the open source image; this validation process is termed an attestation.
 
 *   The DEPA inferencing service sends requests to private key hosting services to pre-fetch private keys. Private keys are granted to a DEPA inferencing service only after attestation.
-*   DEPA inferencing services can send requests to other FLEDGE services or other trusted entities. Requests to other DEPA inferencing services would be encrypted using a public key and decrypted at the destination using the
+*   DEPA inferencing services can send requests to other DEPA inferencing services or other trusted entities. Requests to other DEPA inferencing services would be encrypted using a public key and decrypted at the destination using the
 corresponding private key. Refer to the [DEPA inferencing service explainer](https://github.com/depa-inferencing/docs/blob/main/depa_infernecing_services_api.md)
 as an example of an architecture where a DEPA inferencing service communicates with other DEPA inferencing services.
 *   Public and private keys are periodically prefetched and cached. The key caching TTL within the service is in the order of hours.
@@ -189,10 +189,6 @@ iSPIRT is proposing the following open source services for DEPA inferencing that
 ### Key/value services
 
 Lookup service for fetching real-time signals from data consumers. This is a critical path dependency for many scenarios where data from providers must enriched using the data consumer's data before running inferencing. 
-
-Refer to the
-[Key/Value service API explainer](https://github.com/WICG/turtledove/blob/main/FLEDGE_Key_Value_Server_API.md)
-for more information.
 
 ### Inferencing services
 
