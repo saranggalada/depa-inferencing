@@ -28,17 +28,12 @@ TEEs must satisfy the following requirements to be eligible for running trusted 
 DEPA inferencing will support deployments on Azure, GCP and AWS using the following commercially available TEE platforms that meet the above requirements. 
 
 ### Azure 
-Azure provides a commercially available Cloud TEE solution using [confidential containers on Azure Container Instances](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-confidential-overview). Confidential containers on Azure Container Instances provide secure, private and isolated environments, which helps prevent the operator and CSP from accessing customer data. Azure further provides a hardware-based [attestation](https://learn.microsoft.com/en-us/azure/container-instances/confidential-containers-attestation-concepts) process for these environments that includes all application containers and their configuration. Confidential containers on Azure Container Instances can run Linux-based containerized workloads.
-
-The confidential containers on Azure Container Instances security model is [documented](https://arxiv.org/abs/2302.03976).
-
+Azure provides a commercially available Cloud TEE solution using [confidential containers on Azure Container Instances](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-confidential-overview). Confidential containers on Azure Container Instances provide secure, private and isolated environments, which helps prevent the operator and CSP from accessing customer data. Azure further provides a hardware-based [attestation](https://learn.microsoft.com/en-us/azure/container-instances/confidential-containers-attestation-concepts) process for these environments that includes all application containers and their configuration. Confidential containers on Azure Container Instances can run Linux-based containerized workloads. The confidential containers on Azure Container Instances security model is [documented](https://arxiv.org/abs/2302.03976).
 
 ### AWS
 AWS provides a commercially available Cloud TEE solution using [AWS Nitro Enclave](https://aws.amazon.com/ec2/nitro/nitro-enclaves/). Nitro Enclaves provide secure, private and isolated environments, which the operator and CSP cannot access. AWS provides a cryptographic attestation service for the Nitro enclave. Nitro Enclaves can run Linux-based containerized workloads.
-
 The AWS security model for Nitro Enclave is [documented](https://docs.aws.amazon.com/enclaves/latest/user/security.html#enclaves-security) directly, and is part of the broader Nitro system. The security model is also partially supported by an independent [security report](https://research.nccgroup.com/2023/05/03/public-report-aws-nitro-system-api-security-claims/). 
 
 ### GCP
 GCP provides a commercially available Cloud TEE solution using [Confidential Space](https://cloud.google.com/security/products/confidential-computing), built on top of the Confidential VM product. Confidential Space provides secure, private and isolated environments, which the operator and CSP cannot access. GCP further provides an [Attestation process](https://cloud.google.com/docs/security/confidential-space#attestation-process) for the environments. Confidential Space can run Linux-based containerized workloads.
-
 The Confidential Space security model is [documented](https://cloud.google.com/docs/security/confidential-space), and partially supported by an independent [security report](https://research.nccgroup.com/2022/12/06/public-report-confidential-space-security-review/).
