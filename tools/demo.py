@@ -15,7 +15,7 @@ import re
 import urllib3
 from kubernetes import client, config
 
-base_path = "/home/kapilv/depa-inferencing"
+base_path = os.getcwd()
 
 # Your corrected multi-line JSON string
 request_str = '''
@@ -39,8 +39,8 @@ request_str = '''
 urllib3.disable_warnings()
 
 async def secure_invoke(kms_url, buyer_host, request):
-  result = subprocess.run(["bash", "./secure-invoke-test.sh"],
-      cwd=base_path + "/tools/secure_invoke", 
+  result = subprocess.run(["bash", "secure_invoke_test.sh"],
+      cwd=base_path + "/secure-invoke", 
       capture_output=True)
   return result.stdout
 
@@ -75,7 +75,7 @@ async def main():
   
   pdp.header("Personal data provider")
   kms_url = pdp.text_input("KMS", value="depa-inferencing-ispirt-kms.centralindia.azurecontainer.io:8000")
-  buyer_host = pdp.text_input("PDC endpoint", value="4.207.194.136:50051")
+  buyer_host = pdp.text_input("PDC endpoint", value="135.236.139.130:50051")
   customer_name = pdp.text_input("Customer name", value="Rajni Kausalya")
   customer_id = pdp.text_input("Customer ID", value="9999999990")
   request = {}
@@ -98,7 +98,7 @@ async def main():
 
   pdc.header("Personal data consumer")
   pdc.write("Key/Value data")
-  df = pd.read_csv(base_path + "/data.csv")
+  df = pd.read_csv(base_path + "/key-value-service/data.csv")
   pdc.dataframe(df)
   if pdc.button("Show logs"):
     pod_name = await get_pod(v1, "default", "ofe")
