@@ -24,7 +24,7 @@ Set the following parameters in the `.env` file:
 | Parameter         | Description                                                 | Example |
 |------------------|-------------------------------------------------------------|---------|
 | **`KMS_HOST`**   | Host and port of the KMS service.                           | `127.0.0.1:8000` |
-| **`BUYER_HOST`** | Host and port of the Buyer service.                         | `127.0.0.1:50051` |
+| **`BUYER_HOST`** | Host and port of the Buyer service.                         | grpc:`127.0.0.1:50051`, http(s):`127.0.0.1:51052`|
 | **`HOST_REQUESTS_DIR`** | Directory containing inference request files.       | `/home/user/requests` |
 | **`OPERATION`**  | Operation to be performed- http_end_point:rest_invoke, grpc_end_point:invoke, encrypt_payload:encypt | Default: rest_invoke |
 | **`RETRIES`**    | Number of retries before failing the transaction.          | Default: 1 |
