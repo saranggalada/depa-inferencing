@@ -9,32 +9,11 @@ import os
 import time
 import json
 import requests
-import pyohttp as po
 import asyncio
 import re
 import urllib3
 from kubernetes import client, config
-
 base_path = os.getcwd()
-
-# Your corrected multi-line JSON string
-request_str = '''
-{
-  "buyerInput": {
-    "interestGroups": [
-      {
-        "name": "Rajni Kaushalya",
-        "biddingSignalsKeys": [
-          "9999999994"
-        ],
-        "userBiddingSignals": "{\\"age\\":29, \\"average_amount\\":10000}"
-      }
-    ]
-  },
-  "seller": "irctc.com",
-  "publisherName": "irctc.com"
-}
-'''
 
 urllib3.disable_warnings()
 
@@ -74,13 +53,14 @@ async def main():
   pdp,pdc=st.columns(2)
   
   pdp.header("Personal data provider")
-  kms_url = pdp.text_input("KMS", value="depa-inferencing-ispirt-kms.centralindia.azurecontainer.io:8000")
-  buyer_host = pdp.text_input("PDC endpoint", value="135.236.139.130:50051")
+  kms_url = pdp.text_input("KMS", value="https://depa-inferencing-kms.centralindia.cloudapp.azure.com")
+  buyer_host = pdp.text_input("PDC endpoint", value="4.209.24.251:51052/v1/getbids")
   customer_name = pdp.text_input("Customer name", value="Rajni Kausalya")
   customer_id = pdp.text_input("Customer ID", value="9999999990")
   request = {}
   if pdp.button("Show Request"):
-    request = json.loads(request_str)
+    with open(request_file_path, "r") as fp:
+      request = json.loads(fp.read())
     request['buyerInput']['interestGroups'][0]['name'] = customer_name
     request['buyerInput']['interestGroups'][0]['biddingSignalsKeys'][0] = customer_id
     with open(request_file_path, "w+") as fp:
@@ -89,12 +69,19 @@ async def main():
 
   if pdp.button("Generate Offer"):
     response = await secure_invoke(kms_url=kms_url, buyer_host=buyer_host, request=request)
-    response = response.decode('utf-8')
-    key_id = re.search(r'KEY_ID:\s*(\d+)', response).group()
-    public_key = re.search(r'PUB_KEY:\s*([^\s]+)', response).group()
-    ad = re.search(r'\{.*\}', response).group()
+    response = response.decode('utf-8', errors='ignore')
+    key_id = re.search(r'-key_id=(\d+)', response).group(1)
+    public_key = re.search(r'-public_key=([^\s]+)', response).group(1)
+    request_ciphertext = re.search(r'\"requestCiphertext\":\"([^\s]+)\"', response).group(1)
+    response_ciphertext = re.search(r'\"responseCiphertext\": \"([^\s]+)\"', response).group(1)
+    ad = re.search(r'string_value: ([^\s]+)', response).group(1)
     pdp.write("Encrypting with " + key_id + " and " + public_key)
-    pdp.json(ad)
+    pdp.subheader("Request ciphertext")
+    pdp.write(request_ciphertext)
+    pdp.subheader("Response ciphertext")
+    pdp.write(response_ciphertext)
+    pdp.subheader("Offer")
+    pdp.write(ad)
 
   pdc.header("Personal data consumer")
   pdc.write("Key/Value data")
