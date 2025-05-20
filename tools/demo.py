@@ -9,32 +9,11 @@ import os
 import time
 import json
 import requests
-import pyohttp as po
 import asyncio
 import re
 import urllib3
 from kubernetes import client, config
-
 base_path = os.getcwd()
-
-# Your corrected multi-line JSON string
-request_str = '''
-{
-  "buyerInput": {
-    "interestGroups": [
-      {
-        "name": "Rajni Kaushalya",
-        "biddingSignalsKeys": [
-          "9999999994"
-        ],
-        "userBiddingSignals": "{\\"age\\":29, \\"average_amount\\":10000}"
-      }
-    ]
-  },
-  "seller": "irctc.com",
-  "publisherName": "irctc.com"
-}
-'''
 
 urllib3.disable_warnings()
 
@@ -80,7 +59,8 @@ async def main():
   customer_id = pdp.text_input("Customer ID", value="9999999990")
   request = {}
   if pdp.button("Show Request"):
-    request = json.loads(request_str)
+    with open(request_file_path, "r") as fp:
+      request = json.loads(fp.read())
     request['buyerInput']['interestGroups'][0]['name'] = customer_name
     request['buyerInput']['interestGroups'][0]['biddingSignalsKeys'][0] = customer_id
     with open(request_file_path, "w+") as fp:
