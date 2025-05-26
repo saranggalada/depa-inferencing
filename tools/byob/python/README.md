@@ -30,15 +30,26 @@ Privacy sandbox supports BYOB natively for compiled languages - c++, go, rust. T
    sudo apt-get install python3-dev
    apt install patchelf
    ```
+7. Install serdes_utils
 
+   ```
+   pip install serdes_utils
+   ```
 
 ## Steps to generate binary (With Generate Bid UDF Example)
 
 ### 1. Compile Protobuf definition to generate python proto files
 
 ```
+cd sample_udf
+
 protoc -I=./protodefs --python_out=. generate_bid.proto --experimental_allow_proto3_optional 
+
+protoc -I=./protodefs --python_out=. options.proto 
+
 ```
+
+
 
 ### 2. Run sample python code(Optional test step for python code)
 
@@ -53,13 +64,13 @@ python -m nuitka --standalone sample_udf.py
 
 ```
 
-### 3. Run the generated binary
+### 4. Run the generated binary
 
 ```
 make run-udf-binary
 ```
 
-### 4. zip the generated binary
+### 5. zip the generated binary
 
 ```
 make gen-archive
