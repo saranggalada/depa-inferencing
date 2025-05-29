@@ -7,7 +7,6 @@ Privacy sandbox supports BYOB natively for compiled languages - c++, go, rust. T
 1. Bring up host environment with Ubuntu-20.04 or 22.04
 2. Install Python 3.11
 3. Install python venv & Enable venv
-
 4. Install protoc compiler (30.2)
 
    ```
