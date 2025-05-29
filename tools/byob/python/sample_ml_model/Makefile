@@ -17,3 +17,6 @@ gen-archive:
 	mv credit_card_inference.bin bin.exe && \
 	zip -r ../credit_card_inference.bin.zip . && \
 	cd ..
+	
+train-model:
+	python3 train_credit_card_model.py

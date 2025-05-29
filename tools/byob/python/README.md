@@ -42,9 +42,9 @@ Privacy sandbox supports BYOB natively for compiled languages - c++, go, rust. T
 ```
 cd sample_udf
 
-protoc -I=./protodefs --python_out=. generate_bid.proto --experimental_allow_proto3_optional 
+protoc -I=../protodefs --python_out=. generate_bid.proto --experimental_allow_proto3_optional 
 
-protoc -I=./protodefs --python_out=. options.proto 
+protoc -I=../protodefs --python_out=. options.proto 
 
 ```
 
@@ -91,3 +91,14 @@ make gen-archive
    ```
    aws s3 cp <path_to_your_binary> s3://<your_bucket_name>/
    ```
+
+
+## Sample ML Model
+
+Sample ML model code is provided in the `sample_ml_model` folder. This includes:
+
+- Credit card offer model implementation
+- Training and inference code examples
+- Integration with BYOB serialization/deserialization utilities
+
+You can use this sample as a reference for implementing your own ML models within the DEPA Inferencing framework.

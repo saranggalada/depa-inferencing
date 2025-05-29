@@ -19,7 +19,7 @@ setup(
     name="serdes_utils",
     version="0.1.0",
     description="Protobuf serialization and deserialization utilities for BYOB Python",
-    author="Google LLC",
+    author="pavan adukuri",
     author_email="pavan.adukuri@ispirt.in",
     packages=find_packages(include=["serdes_utils"]),
     python_requires=">=3.10",
