@@ -54,7 +54,6 @@ def read_request_from_fd(fd):
             byte = b[0]
             if not (byte & 0x80):
                 break
-        return b
     #Parse the tag byte to verify wire type and field number
     def parse_tag_byte(tag_byte):
         if not tag_byte:
@@ -105,8 +104,7 @@ def read_request_from_fd(fd):
     if PAYLOAD_LENGTH_INDICATOR == True:
         b=read_payload_length_indicator()
     # 2.Read tag byte
-    #tag_byte = os.read(fd, 1)
-    tag_byte = b
+    tag_byte = os.read(fd, 1)
     parse_tag_byte(tag_byte)
     # 3.Decode the message length from varint
     msg_len, length_buffer = read_varint()

@@ -1,6 +1,6 @@
 json-proto:
 	rm -rf ./samples/get_bid_req.proto
-	python3 json_to_protobuf.py ./sample_req_data/get_bid_request.pbtxt ./sample_req_data/get_bid_request.proto
+	python3 gen_protobuf_data.py ./sample_req_data/get_bid_req.pbtxt ./sample_req_data/get_bid_req.proto
 
 run-udf: json-proto
 	./run_udf.sh
