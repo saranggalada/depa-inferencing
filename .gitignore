@@ -1,1 +1,13 @@
 dist
+*.pyc
+*.txt
+PKG-INFO
+*.zip
+*.proto
+*.so
+lib*.so*
+*.bin
+*.egg-info
+__pycache__
+*.build
+*.dist
