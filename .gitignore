@@ -1,1 +1,10 @@
 dist
+*.py 
+*.pyc
+*.txt
+PKG-INFO
+*.zip
+*.proto
+*.so
+lib*.so*
+*.bin
