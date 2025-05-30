@@ -19,7 +19,7 @@ import logging
 # Change to ERROR->DEBUG to see logs
 log_level_name = os.environ.get('LOG_LEVEL', 'ERROR')
 # In debug env, there is no PAYLOAD_LENGTH_INDICATOR, set this to False
-PAYLOAD_LENGTH_INDICATOR = False
+PAYLOAD_LENGTH_INDICATOR = True
 
 log_level = getattr(logging, log_level_name.upper(), logging.INFO)
 # Configure logging
