@@ -1,5 +1,4 @@
 dist
-*.py 
 *.pyc
 *.txt
 PKG-INFO
@@ -8,3 +7,7 @@ PKG-INFO
 *.so
 lib*.so*
 *.bin
+*.egg-info
+__pycache__
+*.build
+*.dist
