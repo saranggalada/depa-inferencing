@@ -19,6 +19,7 @@ run-udf-binary: json-proto
 gen-archive:
 	cd credit_card_inference.dist && \
 	mv credit_card_inference.bin bin.exe && \
+	cp --dereference /lib/x86_64-linux-gnu/libz* . && \
 	zip -r ../credit_card_inference.bin.zip . && \
 	cd ..
 	
