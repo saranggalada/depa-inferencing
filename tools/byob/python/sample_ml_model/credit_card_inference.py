@@ -45,32 +45,24 @@ def load_model(model_dir):
     """Load the trained model and scaler"""
     base_path = os.path.dirname(os.path.abspath(__file__))
     model_dir = os.path.join(base_path, model_dir)
-    try:
-        with open(os.path.join(model_dir, 'credit_card_model.pkl'), 'rb') as f:
-            try:
-                print(f"Loading model from {os.path.join(model_dir, 'credit_card_model.pkl')}")
-                model = pickle.load(f)
-            except ImportError as e:
-                print(f"Import Error loading model: {e}")
-                sys.exit(1)
-    except FileNotFoundError as e:        
-        print(f"Model file not found: {e}")
-        sys.exit(1) 
-    
-    try:
-        with open(os.path.join(model_dir, 'credit_card_scaler.pkl'), 'rb') as f:
-            try:
-                print(f"Loading scaler from {os.path.join(model_dir, 'credit_card_scaler.pkl')}")
-                scaler = pickle.load(f)
-            except ImportError as e:
-                print(f"Import Error loading scaler: {e}")
-                sys.exit(1)
-    except FileNotFoundError as e:
-        print(f"Scaler file not found: {e}")
-        sys.exit(1)
-        
-    return model, scaler
 
+    def load_pickle(filename):
+        file_path = os.path.join(model_dir)
+        try:
+            with open(file_path, 'rb') as f:
+                return pickle.load(f)
+        except FileNotFoundError:
+            print(f"file not found: {file_path}")
+            sys.exit(1)
+        except Exception as e:
+            print(f"Error loading {file_path}: {e}")
+            sys.exit(1)
+
+    model = load_pickle('credit_card_model.pkl')
+    scaler = load_pickle('credit_card_scaler.pkl')
+
+    return model, scaler
+        
 def main():
     if len(sys.argv) < 2:
         sys.stderr.write("Not enough arguments!\n")
@@ -119,18 +111,8 @@ def main():
         bid.render = f"https://creditcard/offers/{card_tier}?limit={credit_limit}"
         bid.ad_cost = 1.0
         bid.bid_currency = 'Rupees'
-        
-        # Add metadata with details about the offer
-        # metadata = {
-        #     "card_tier": card_tier,
-        #     "credit_limit": credit_limit,
-        #     "customer_name": interest_group.name,
-        #     "credit_score": float(credit_score)
-        # }
-        # bid.metadata = json.dumps(metadata)
-        
+
         response.bids.append(bid)
-        
         print(f"Generated offer for {interest_group.name}: {card_tier.upper()} card with limit ${credit_limit}")
     
     except Exception as e:
