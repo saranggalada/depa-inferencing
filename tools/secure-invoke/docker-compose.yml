@@ -19,3 +19,4 @@ services:
       CLIENT_CERT: /etc/ssl/certs/${CLIENT_CERT}
       CA_CERT: /etc/ssl/certs/${CA_CERT}
       ENABLE_VERBOSE: "${ENABLE_VERBOSE:-false}" # Controls verbose output
+      MAX_CONCURRENT_REQUESTS: ${MAX_CONCURRENT_REQUESTS} # Maximum concurrent requests for batch processing
