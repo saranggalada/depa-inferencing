@@ -15,3 +15,7 @@ services:
       RETRIES: ${RETRIES:-1}
       INSECURE: $(INSECURE}
       HEADERS: $(HEADERS}
+      CLIENT_KEY: /etc/ssl/certs/${CLIENT_KEY}
+      CLIENT_CERT: /etc/ssl/certs/${CLIENT_CERT}
+      CA_CERT: /etc/ssl/certs/${CA_CERT}
+      ENABLE_VERBOSE: "${ENABLE_VERBOSE:-false}" # Controls verbose output
