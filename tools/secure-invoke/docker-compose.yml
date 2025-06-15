@@ -15,7 +15,3 @@ services:
       RETRIES: ${RETRIES:-1}
       INSECURE: $(INSECURE}
       HEADERS: $(HEADERS}
-      CLIENT_KEY: /certs/${CLIENT_KEY}
-      CLIENT_CERT: /certs/${CLIENT_CERT}
-      CA_CERT: /certs/${CA_CERT}
-      ENABLE_VERBOSE: "${ENABLE_VERBOSE:-false}" # Controls verbose output
