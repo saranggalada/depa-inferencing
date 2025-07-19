@@ -13,20 +13,20 @@
 # limitations under the License.
 
 locals {
-  environment = "depainf"
+  environment = "demo"
   operator    = "tf"
 
   # Please refer to https://github.com/claranet/terraform-azurerm-regions/blob/master/REGIONS.md for region codes. Check the "Region Deployments" section in https://github.com/microsoft/virtualnodesOnAzureContainerInstances for regions that support confidential pods.
   region = "centralindia"
 
-  subscription_id = "2a5f1e30-b076-4cb2-9235-2036241dedf0"
-  tenant_id       = "3039a1ed-8db4-4652-a69b-9ff4e265e18d"
+  subscription_id = "<your_subscription_id>"
+  tenant_id       = "<your_tenant_id>"
 
   image_registry = "ispirt"
   registry_path  = "depa-inferencing/azure"
   image_tag      = "nonprod-4.3.0.0"
   kv_image_tag   = "nonprod-1.0.0.0"
-  kms_url        = "https://depa-inferencing-kms.centralindia.cloudapp.azure.com"
+  kms_url        = ""
 }
 
 module "offer" {
