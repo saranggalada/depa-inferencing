@@ -30,7 +30,7 @@ Set the following parameters in the `.env` file:
 | **`RETRIES`**    | Number of retries before failing the transaction.          | Default: 1 |
 | **`INSECURE`**   | Disable certification verification                         | Default: false |
 | **`HEADERS`**    | Additional http headers in '{"key1"="value1", "key2"="value2", ".."}' format | '{"Authorization"="Bearer \<token\>", "API_KEY"=""}' |
-| **`HOST_CERTS_DIR`** | Directory containing certificates in the container. | `/home/azureuser/certs` |
+| **`HOST_CERTS_DIR`** | Directory containing certificates in the container. | `/etc/ssl/certs` |
 | **`CLIENT_KEY`** | Client key file                                       | `client.key` |
 | **`CLIENT_CERT`**| Client certificate file                               | `client.crt` |
 | **`CA_CERT`**    | CA certificate file                                  | `ca.crt` |
