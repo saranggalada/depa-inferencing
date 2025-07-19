@@ -67,6 +67,7 @@ static_resources:
               proto_descriptor: "/etc/envoy/bidding_auction_servers_descriptor_set.pb"
               services:
               - "privacy_sandbox.bidding_auction_servers.BuyerFrontEnd"
+              convert_grpc_status: true
               print_options:
                 add_whitespace: true
                 always_print_primitive_fields: true
