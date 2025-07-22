@@ -17,16 +17,16 @@ locals {
   operator    = "tf"
 
   # Please refer to https://github.com/claranet/terraform-azurerm-regions/blob/master/REGIONS.md for region codes. Check the "Region Deployments" section in https://github.com/microsoft/virtualnodesOnAzureContainerInstances for regions that support confidential pods.
-  region = "northeurope"
+  region = "centralindia"
 
   subscription_id = "<your_subscription_id>"
   tenant_id       = "<your_tenant_id>"
 
-  image_registry = "kapilvaswani"
+  image_registry = "ispirt"
   registry_path  = "depa-inferencing/azure"
-  image_tag      = "prod-4.3.0.0"
-  kv_image_tag   = "prod-1.0.0.0"
-  kms_url        = "https://depa-inferencing-kms.centralindia.cloudapp.azure.com"
+  image_tag      = "nonprod-4.3.0.0"
+  kv_image_tag   = "nonprod-1.0.0.0"
+  kms_url        = ""
 }
 
 module "offer" {
@@ -46,7 +46,7 @@ module "offer" {
     {
       name      = "offer-service"
       image     = "${local.image_registry}/bidding-service:${local.image_tag}"
-      ccepolicy = "${file("../cce-policies/offer.base64")}"
+      ccepolicy = "${file("../cce-policies/allow_all.base64")}"
       replicas  = 3
       resources = {
         requests = {
@@ -107,7 +107,7 @@ module "offer" {
     {
       name      = "ofe"
       image     = "${local.image_registry}/buyer-frontend-service:${local.image_tag}"
-      ccepolicy = "${file("../cce-policies/ofe.base64")}"
+      ccepolicy = "${file("../cce-policies/allow_all.base64")}"
       replicas  = 3
       resources = {
         requests = {
@@ -149,7 +149,7 @@ module "offer" {
     {
       name      = "kv"
       image     = "${local.image_registry}/key-value-service:${local.kv_image_tag}"
-      ccepolicy = "${file("../cce-policies/kv.base64")}"
+      ccepolicy = "${file("../cce-policies/allow_all.base64")}"
       replicas  = 1
       resources = {
         requests = {
