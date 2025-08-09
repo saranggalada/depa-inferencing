@@ -1,0 +1,183 @@
+# .github/workflows/build.yml
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  BUILD_TYPE: Release
+  REGISTRY: ispirt.azurecr.io
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        repository: ispirt/ad-selection-api.bidding-and-auction-servers
+        ref: main
+        fetch-depth: 0
+        
+    - name: Setup Build Environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake git
+        
+    - name: Setup Dependencies
+      run: |
+        # Install required dependencies based on the project requirements
+        sudo apt-get install -y \
+          libssl-dev \
+          libcurl4-openssl-dev \
+          libprotobuf-dev \
+          protobuf-compiler \
+          pkg-config \
+          docker.io \
+          docker-compose
+          
+    - name: Setup Docker
+      run: |
+        sudo systemctl start docker
+        sudo usermod -aG docker $USER
+        
+    - name: Make Build Script Executable
+      run: |
+        chmod +x ./production/packaging/build_and_test_all_in_docker
+        
+    - name: Run Custom Build Command
+      run: |
+        ./production/packaging/build_and_test_all_in_docker \
+          --service-path bidding_service \
+          --service-path buyer_frontend_service \
+          --no-precommit \
+          --no-tests \
+          --build-flavor non_prod \
+          --platform azure \
+          --instance local
+          
+    - name: List Generated Tar Files
+      run: |
+        echo "Contents of dist/debian directory:"
+        ls -la dist/debian/ || echo "dist/debian directory not found"
+        find dist/debian/ -name "*.tar" -type f | head -10
+        
+    - name: Upload Debian Tar Files
+      uses: actions/upload-artifact@v4
+      with:
+        name: debian-tar-files
+        path: |
+          ./dist/debian/*.tar
+        retention-days: 30
+
+  docker-push-to-acr:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Download Debian Tar Files
+      uses: actions/download-artifact@v4
+      with:
+        name: debian-tar-files
+        path: ./dist/debian/
+        
+    - name: List Downloaded Tar Files
+      run: |
+        echo "Downloaded tar files:"
+        ls -la ./dist/debian/
+        
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Log in to Azure Container Registry
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ env.REGISTRY }}
+        username: ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }}
+        password: ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
+        
+    - name: Load and Push Bidding Service Image
+      run: |
+        # Load the bidding service image from tar file
+        if [ -f "./dist/debian/bidding_service_image.tar" ]; then
+          echo "Loading bidding_service_image.tar..."
+          docker load -i ./dist/debian/bidding_service_image.tar
+          
+          # Get the loaded image name
+          LOADED_IMAGE=$(docker images --format "table {{.Repository}}:{{.Tag}}" | grep -v "REPOSITORY" | head -n 1 | tr -d '[:space:]')
+          echo "Loaded image: $LOADED_IMAGE"
+          
+          # Tag the image for Azure Container Registry
+          docker tag $LOADED_IMAGE ${{ env.REGISTRY }}/bidding-service:${{ github.sha }}
+          docker tag $LOADED_IMAGE ${{ env.REGISTRY }}/bidding-service:latest
+          
+          # Push to Azure Container Registry
+          echo "Pushing bidding service to ACR..."
+          docker push ${{ env.REGISTRY }}/bidding-service:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/bidding-service:latest
+          
+          echo "✅ Successfully pushed bidding service image"
+        else
+          echo "❌ bidding_service_image.tar not found"
+          exit 1
+        fi
+        
+    - name: Load and Push Buyer Frontend Service Image
+      run: |
+        # Load the buyer frontend service image from tar file
+        if [ -f "./dist/debian/buyer_frontend_service_image.tar" ]; then
+          echo "Loading buyer_frontend_service_image.tar..."
+          docker load -i ./dist/debian/buyer_frontend_service_image.tar
+          
+          # Get the loaded image name (skip the first one which is bidding service)
+          LOADED_IMAGE=$(docker images --format "table {{.Repository}}:{{.Tag}}" | grep -v "REPOSITORY" | grep -v "${{ env.REGISTRY }}/bidding-service" | head -n 1 | tr -d '[:space:]')
+          echo "Loaded image: $LOADED_IMAGE"
+          
+          # Tag the image for Azure Container Registry
+          docker tag $LOADED_IMAGE ${{ env.REGISTRY }}/buyer-frontend-service:${{ github.sha }}
+          docker tag $LOADED_IMAGE ${{ env.REGISTRY }}/buyer-frontend-service:latest
+          
+          # Push to Azure Container Registry
+          echo "Pushing buyer frontend service to ACR..."
+          docker push ${{ env.REGISTRY }}/buyer-frontend-service:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/buyer-frontend-service:latest
+          
+          echo "✅ Successfully pushed buyer frontend service image"
+        else
+          echo "❌ buyer_frontend_service_image.tar not found"
+          exit 1
+        fi
+        
+    - name: Azure Container Registry Scan
+      uses: Azure/container-scan@v0
+      with:
+        image-name: ${{ env.REGISTRY }}/bidding-service:${{ github.sha }}
+        username: ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }}
+        password: ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
+      continue-on-error: true
+        
+    - name: Clean up local images
+      run: |
+        # Clean up local images to save space
+        docker system prune -f
+        
+    - name: Output Image Information
+      run: |
+        echo "🚀 Successfully pushed Docker images to Azure Container Registry:"
+        echo "📦 Registry: ${{ env.REGISTRY }}"
+        echo ""
+        echo "🔹 Bidding Service:"
+        echo "   - ${{ env.REGISTRY }}/bidding-service:${{ github.sha }}"
+        echo "   - ${{ env.REGISTRY }}/bidding-service:latest"
+        echo ""
+        echo "🔹 Buyer Frontend Service:"
+        echo "   - ${{ env.REGISTRY }}/buyer-frontend-service:${{ github.sha }}"
+        echo "   - ${{ env.REGISTRY }}/buyer-frontend-service:latest"
+        echo ""
+        echo "📝 To pull these images:"
+        echo "   docker pull ${{ env.REGISTRY }}/bidding-service:latest"
+        echo "   docker pull ${{ env.REGISTRY }}/buyer-frontend-service:latest"
