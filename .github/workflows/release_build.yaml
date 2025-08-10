@@ -38,12 +38,12 @@ env:
   
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     
     steps:
     - name: Display Manual Trigger Parameters
       run: |
-        echo "🚀 Manual Build Triggered"
+        echo "🚀 Manual Build Triggered on Self-Hosted Runner"
         echo "Environment: ${{ github.event.inputs.environment }}"
         echo "Build Flavor: ${{ github.event.inputs.build_flavor }}"
         echo "Services: ${{ github.event.inputs.services }}"
@@ -80,7 +80,7 @@ jobs:
           protobuf-compiler \
           pkg-config
 
-    - name: Install Docker (Azure-optimized)
+    - name: Install Docker
       run: |
         # Add Docker's official GPG key
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
@@ -105,50 +105,50 @@ jobs:
         docker --version
         docker-compose --version
 
-    - name: Make Build Script Executable
-      run: |
-        chmod +x ./production/packaging/build_and_test_all_in_docker
+    # - name: Make Build Script Executable
+    #   run: |
+    #     chmod +x ./production/packaging/build_and_test_all_in_docker
         
-    - name: Parse Service Paths
-      id: parse_services
-      run: |
-        # Convert comma-separated services to --service-path arguments
-        services="${{ github.event.inputs.services }}"
-        service_args=""
-        IFS=',' read -ra SERVICE_ARRAY <<< "$services"
-        for service in "${SERVICE_ARRAY[@]}"; do
-          service_args="$service_args --service-path ${service// /}"
-        done
-        echo "service_args=$service_args" >> $GITHUB_OUTPUT
-        echo "Parsed service arguments: $service_args"
+    # - name: Parse Service Paths
+    #   id: parse_services
+    #   run: |
+    #     # Convert comma-separated services to --service-path arguments
+    #     services="${{ github.event.inputs.services }}"
+    #     service_args=""
+    #     IFS=',' read -ra SERVICE_ARRAY <<< "$services"
+    #     for service in "${SERVICE_ARRAY[@]}"; do
+    #       service_args="$service_args --service-path ${service// /}"
+    #     done
+    #     echo "service_args=$service_args" >> $GITHUB_OUTPUT
+    #     echo "Parsed service arguments: $service_args"
         
-    - name: Run Custom Build Command
-      run: |
-        ./production/packaging/build_and_test_all_in_docker \
-          ${{ steps.parse_services.outputs.service_args }} \
-          --no-precommit \
-          --no-tests \
-          --build-flavor ${{ github.event.inputs.build_flavor }} \
-          --platform azure \
-          --instance local
+    # - name: Run Custom Build Command
+    #   run: |
+    #     ./production/packaging/build_and_test_all_in_docker \
+    #       ${{ steps.parse_services.outputs.service_args }} \
+    #       --no-precommit \
+    #       --no-tests \
+    #       --build-flavor ${{ github.event.inputs.build_flavor }} \
+    #       --platform azure \
+    #       --instance local
           
     - name: List Generated Tar Files
       run: |
-        echo "Contents of dist/debian directory:"
-        ls -la dist/debian/ || echo "dist/debian directory not found"
-        find dist/debian/ -name "*.tar" -type f | head -10
+        echo "Contents of dist/azure directory:"
+        ls -la dist/azure/ || echo "dist/azure directory not found"
+        find dist/azure/ -name "*.tar" -type f | head -10
         
     - name: Upload Debian Tar Files
       uses: actions/upload-artifact@v4
       with:
         name: debian-tar-files-${{ github.event.inputs.environment }}
         path: |
-          ./dist/debian/*.tar
+          ./dist/azure/*.tar
         retention-days: 30
 
   docker-push-to-acr:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     if: ${{ github.event.inputs.push_to_acr == 'true' }}
     environment: ${{ github.event.inputs.environment }}
     
@@ -157,12 +157,12 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: debian-tar-files-${{ github.event.inputs.environment }}
-        path: ./dist/debian/
+        path: ./dist/azure/
         
     - name: List Downloaded Tar Files
       run: |
         echo "Downloaded tar files:"
-        ls -la ./dist/debian/
+        ls -la ./dist/azure/
         
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -178,9 +178,9 @@ jobs:
       if: contains(github.event.inputs.services, 'bidding_service')
       run: |
         # Load the bidding service image from tar file
-        if [ -f "./dist/debian/bidding_service_image.tar" ]; then
+        if [ -f "./dist/azure/bidding_service_image.tar" ]; then
           echo "Loading bidding_service_image.tar..."
-          docker load -i ./dist/debian/bidding_service_image.tar
+          docker load -i ./dist/azure/bidding_service_image.tar
           
           # Get the loaded image name
           LOADED_IMAGE=$(docker images --format "table {{.Repository}}:{{.Tag}}" | grep -v "REPOSITORY" | head -n 1 | tr -d '[:space:]')
@@ -205,12 +205,12 @@ jobs:
       if: contains(github.event.inputs.services, 'buyer_frontend_service')
       run: |
         # Load the buyer frontend service image from tar file
-        if [ -f "./dist/debian/buyer_frontend_service_image.tar" ]; then
+        if [ -f "./dist/azure/buyer_frontend_service_image.tar" ]; then
           echo "Loading buyer_frontend_service_image.tar..."
-          docker load -i ./dist/debian/buyer_frontend_service_image.tar
+          docker load -i ./dist/azure/buyer_frontend_service_image.tar
           
           # Get the loaded image name (skip the first one which is bidding service)
-          LOADED_IMAGE=$(docker images --format "table {{.Repository}}:{{.Tag}}" | grep -v "REPOSITORY" | grep -v "${{ env.REGISTRY }}/bidding-service" | head -n 1 | tr -d '[:space:]')
+          LOADED_IMAGE=$(docker images --format "table {{.Repository}}:{{.Step}}" | grep -v "REPOSITORY" | grep -v "${{ env.REGISTRY }}/bidding-service" | head -n 1 | tr -d '[:space:]')
           echo "Loaded image: $LOADED_IMAGE"
           
           # Tag the image for Azure Container Registry with environment
