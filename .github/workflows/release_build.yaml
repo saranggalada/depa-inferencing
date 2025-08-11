@@ -145,6 +145,36 @@ jobs:
         ls -la dist/azure/ || echo "dist/azure directory not found"
         find dist/azure/ -name "*.tar" -type f | head -10
 
+    - name: Cleanup build artifacts (Build Job)
+      if: always()  
+      run: |
+        echo "🧹 Cleaning up build artifacts from build job..."
+        
+        # Clean up Docker artifacts
+        echo "Cleaning Docker containers and images..."
+        docker container prune -f || true
+        docker image prune -f || true
+        
+        # Clean up any problematic nested directories created during build
+        echo "Cleaning up nested bidding-and-auction-servers directories..."
+        sudo rm -rf ./bidding-and-auction-servers/ || true
+        sudo rm -rf ../bidding-and-auction-servers/ || true
+        
+        # Clean up temporary files and caches
+        echo "Cleaning up temporary files..."
+        sudo rm -rf /tmp/docker-* || true
+        sudo rm -rf /tmp/buildkit-* || true
+        
+        # Fix permissions on workspace files
+        echo "Fixing workspace permissions..."
+        sudo chown -R $(whoami):$(whoami) ${GITHUB_WORKSPACE} || true
+        
+        # Show disk space after cleanup
+        echo "📊 Disk space after cleanup:"
+        df -h
+        
+        echo "✅ Build job cleanup completed"
+
   docker-push-to-acr:
     needs: build
     runs-on: self-hosted
@@ -239,20 +269,12 @@ jobs:
           exit 1
         fi
 
-    - name: Cleanup build artifacts
+    - name: Cleanup build artifacts (Docker Push Job)
       if: always()
       run: |
-        echo "Cleaning up build artifacts..."
-        # Clean up any docker artifacts that might have permission issues
+        echo "🧹 Cleaning up build artifacts from docker push job..."
         docker container prune -f || true
-        
-        # Clean up any problematic nested bidding-and-auction-servers directories created during build
-        #echo "Cleaning up any nested bidding-and-auction-servers directories created during build..."
-        #sudo rm -rf /home/azureuser/actions-runner/bidding-and-auction-servers/ || true
-        #sudo rm -rf ./bidding-and-auction-servers/ || true
-        #sudo rm -rf ../bidding-and-auction-servers/ || true
-        
-        # Fix permissions on workspace files (preserve content)
+        docker image prune -f || true
         sudo chown -R $(whoami):$(whoami) ${GITHUB_WORKSPACE} || true
-        
-    
+        echo "✅ Docker push job cleanup completed"
+
