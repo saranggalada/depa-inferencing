@@ -48,7 +48,12 @@ jobs:
         echo "Build Flavor: ${{ github.event.inputs.build_flavor }}"
         echo "Services: ${{ github.event.inputs.services }}"
         echo "Push to ACR: ${{ github.event.inputs.push_to_acr }}"
-        
+
+    - name: Fix permissions
+      run: |
+        chown -R $USER:$USER .
+        chmod -R u+rwX .
+
     - name: Checkout Repository
       uses: actions/checkout@v4
       with:
