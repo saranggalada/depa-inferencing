@@ -24,12 +24,12 @@ on:
       services:
         description: 'Services to build (comma-separated)'
         required: true
-        default: 'bidding_service,buyer_frontend_service'
+        default: 'key-value-service'
         type: string
       release_tag:
         description: 'Release version for Docker images (e.g., 4.8.0.0)'
         required: true
-        default: '4.8.0.0'
+        default: '1.0.0.0'
         type: string
       push_to_acr:
         description: 'Push images to Azure Container Registry'
@@ -58,7 +58,7 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
       with:
-        repository: ispirt/ad-selection-api.bidding-and-auction-servers
+        repository: ispirt/protected-auction-key-value-service
         ref: main
         fetch-depth: 0
         
@@ -132,12 +132,9 @@ jobs:
     - name: Run Custom Build Command
       run: |
         ./production/packaging/build_and_test_all_in_docker \
-          ${{ steps.parse_services.outputs.service_args }} \
-          --no-precommit \
-          --no-tests \
-          --build-flavor ${{ github.event.inputs.build_flavor }} \
-          --platform azure \
-          --instance local
+        --instance azure_microsoft \
+        --platform azure_microsoft \
+        --build-flavor ${{ github.event.inputs.build_flavor }}
           
     - name: List Generated Tar Files
       run: |
@@ -155,20 +152,11 @@ jobs:
         docker container prune -f || true
         docker image prune -f || true
         
-        # Clean up any problematic nested directories created during build
-        echo "Cleaning up nested bidding-and-auction-servers directories..."
-        sudo rm -rf ./bidding-and-auction-servers/ || true
-        sudo rm -rf ../bidding-and-auction-servers/ || true
-        
         # Clean up temporary files and caches
         echo "Cleaning up temporary files..."
         sudo rm -rf /tmp/docker-* || true
         sudo rm -rf /tmp/buildkit-* || true
-        
-        # Fix permissions on workspace files
-        echo "Fixing workspace permissions..."
-        sudo chown -R $(whoami):$(whoami) ${GITHUB_WORKSPACE} || true
-        
+            
         # Show disk space after cleanup
         echo "📊 Disk space after cleanup:"
         df -h
@@ -198,74 +186,40 @@ jobs:
         BUILD_FLAVOR="${{ github.event.inputs.build_flavor }}"
         RELEASE_VERSION="${{ github.event.inputs.release_tag }}"
 
-        BUILD_FLAVOR="${BUILD_FLAVOR//_/-}"  # Convert non_prod to non-prod
-
         # Generate service-specific tags
-        BIDDING_SERVICE_IMAGE="bidding-service:${BUILD_FLAVOR}-${RELEASE_VERSION}"
-        BUYER_FRONTEND_IMAGE="buyer-frontend-service:${BUILD_FLAVOR}-${RELEASE_VERSION}"
-        
-        echo "bidding_service_image=$BIDDING_SERVICE_IMAGE" >> $GITHUB_OUTPUT
-        echo "buyer_frontend_image=$BUYER_FRONTEND_IMAGE" >> $GITHUB_OUTPUT
-        
-        echo "✅ Service-specific Docker tags generated:"
-        echo "  Bidding Service: $BIDDING_SERVICE_IMAGE"
-        echo "  Buyer Frontend Service: $BUYER_FRONTEND_IMAGE"
+        KV_SERVICE_IMAGE="key-value-service:${BUILD_FLAVOR}-${RELEASE_VERSION}"
 
-    - name: Load and Push Bidding Service Image
+        echo "key-value-service=$KV_SERVICE_IMAGE" >> $GITHUB_OUTPUT
+
+        echo "✅ Service-specific Docker tags generated:"
+        echo "  Key Value Service: $KV_SERVICE_IMAGE"
+
+    - name: Load and Push Key Value Service Image
       if: contains(github.event.inputs.services, 'bidding_service')
       run: |
-        # Load the bidding service image from tar file
-        if [ -f "./dist/azure/bidding_service_image.tar" ]; then
-          echo "Loading bidding_service_image.tar..."
-          LOAD_OUTPUT=$(docker load -i ./dist/azure/bidding_service_image.tar)
-          
+        # Load the key value service image from tar file
+        if [ -f "./dist/azure/key_value_service_image.tar" ]; then
+          echo "Loading key_value_service_image.tar..."
+          LOAD_OUTPUT=$(docker load -i ./dist/azure/key_value_service_image.tar)
+
           # Get the loaded image name
           LOADED_IMAGE=$(echo "$LOAD_OUTPUT" | grep "Loaded image:" | sed 's/Loaded image: //')
           echo "Loaded image: $LOADED_IMAGE"
           
           # Tag the image with service-specific naming following Azure best practices
           SERVICE_REPO_NAME="azure/depa-inferencing"
-          
-          # Service-specific tag: bidding-service:non-prod:4.8.0.0
-          docker tag $LOADED_IMAGE ${{ env.REGISTRY }}/$SERVICE_REPO_NAME/${{ steps.generate_tags.outputs.bidding_service_image}}
+
+          # Service-specific tag: key-value-service:non-prod:1.0.0.0
+          docker tag $LOADED_IMAGE ${{ env.REGISTRY }}/$SERVICE_REPO_NAME/${{ steps.generate_tags.outputs.key_value_service}}
             
           # Push all tags to Azure Container Registry
-          echo "Pushing bidding service to ACR with service-specific tags..."
-          docker push ${{ env.REGISTRY }}/$SERVICE_REPO_NAME/${{ steps.generate_tags.outputs.bidding_service_image}}
-          
-          echo "✅ Successfully pushed bidding service image with tags:"
-          echo "  - ${{ env.REGISTRY }}/$SERVICE_REPO_NAME/${{ steps.generate_tags.outputs.bidding_service_image }}"
+          echo "Pushing key value service to ACR with service-specific tags..."
+          docker push ${{ env.REGISTRY }}/$SERVICE_REPO_NAME/${{ steps.generate_tags.outputs.key_value_service_image }}
+
+          echo "✅ Successfully pushed key value service image with tags:"
+          echo "  - ${{ env.REGISTRY }}/$SERVICE_REPO_NAME/${{ steps.generate_tags.outputs.key_value_service }}"
         else
-          echo "❌ bidding_service_image.tar not found"
-          exit 1
-        fi
-        
-    - name: Load and Push Buyer Frontend Service Image
-      if: contains(github.event.inputs.services, 'buyer_frontend_service')
-      run: |
-        # Load the buyer frontend service image from tar file
-        if [ -f "./dist/azure/buyer_frontend_service_image.tar" ]; then
-          echo "Loading buyer_frontend_service_image.tar..."
-          LOAD_OUTPUT=$(docker load -i ./dist/azure/buyer_frontend_service_image.tar)
-          
-          # Get the loaded image name (skip the first one which is bidding service)
-          LOADED_IMAGE=$(echo "$LOAD_OUTPUT" | grep "Loaded image:" | sed 's/Loaded image: //')
-          echo "Loaded image: $LOADED_IMAGE"
-          
-          # Tag the image with service-specific naming following Azure best practices
-          SERVICE_REPO_NAME="azure/depa-inferencing"
-          
-          # Service-specific tag: buyer-frontend-service:non-prod:4.8.0.0
-          docker tag $LOADED_IMAGE ${{ env.REGISTRY }}/$SERVICE_REPO_NAME/${{ steps.generate_tags.outputs.buyer_frontend_image}}
-          
-          # Push all tags to Azure Container Registry
-          echo "Pushing buyer frontend service to ACR with service-specific tags..."
-          docker push ${{ env.REGISTRY }}/$SERVICE_REPO_NAME/${{ steps.generate_tags.outputs.buyer_frontend_image}}
-          
-          echo "✅ Successfully pushed buyer frontend service image with tags:"
-          echo "  - ${{ env.REGISTRY }}/$SERVICE_REPO_NAME/${{ steps.generate_tags.outputs.buyer_frontend_image}}"
-        else
-          echo "❌ buyer_frontend_service_image.tar not found"
+          echo "❌ key_value_service_image.tar not found"
           exit 1
         fi
 

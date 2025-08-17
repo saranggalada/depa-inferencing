@@ -5,6 +5,16 @@ RUN apt-get install -y python3.11
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
 RUN apt-get update && apt-get install -y protobuf-compiler python3-dev python3-pip patchelf zip curl
 
+# Install Terraform
+ENV TERRAFORM_VERSION=1.5.7
+RUN curl -LO https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
+    unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
+    mv terraform /usr/local/bin/ && \
+    rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
+    terraform --version
+
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+
 # Install protoc
 ENV PROTOC_VERSION=30.2
 ENV PB_REL="https://github.com/protocolbuffers/protobuf/releases"
