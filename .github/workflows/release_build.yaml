@@ -202,7 +202,7 @@ jobs:
 
         # Generate service-specific tags
         BIDDING_SERVICE_IMAGE="bidding-service:${BUILD_FLAVOR}-${RELEASE_VERSION}"
-        BUYER_FRONTEND_IMAGE="buyer-frontend-service-${BUILD_FLAVOR}:${RELEASE_VERSION}"
+        BUYER_FRONTEND_IMAGE="buyer-frontend-service:${BUILD_FLAVOR}-${RELEASE_VERSION}"
         
         echo "bidding_service_image=$BIDDING_SERVICE_IMAGE" >> $GITHUB_OUTPUT
         echo "buyer_frontend_image=$BUYER_FRONTEND_IMAGE" >> $GITHUB_OUTPUT
@@ -217,14 +217,14 @@ jobs:
         # Load the bidding service image from tar file
         if [ -f "./dist/azure/bidding_service_image.tar" ]; then
           echo "Loading bidding_service_image.tar..."
-          docker load -i ./dist/azure/bidding_service_image.tar
+          LOAD_OUTPUT=$(docker load -i ./dist/azure/bidding_service_image.tar)
           
           # Get the loaded image name
-          LOADED_IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | head -n 1)
+          LOADED_IMAGE=$(echo "$LOAD_OUTPUT" | grep "Loaded image:" | sed 's/Loaded image: //')
           echo "Loaded image: $LOADED_IMAGE"
           
           # Tag the image with service-specific naming following Azure best practices
-          SERVICE_REPO_NAME="depa-inferencing"
+          SERVICE_REPO_NAME="azure/depa-inferencing"
           
           # Service-specific tag: bidding-service:non-prod:4.8.0.0
           docker tag $LOADED_IMAGE ${{ env.REGISTRY }}/$SERVICE_REPO_NAME/${{ steps.generate_tags.outputs.bidding_service_image}}
@@ -246,14 +246,14 @@ jobs:
         # Load the buyer frontend service image from tar file
         if [ -f "./dist/azure/buyer_frontend_service_image.tar" ]; then
           echo "Loading buyer_frontend_service_image.tar..."
-          docker load -i ./dist/azure/buyer_frontend_service_image.tar
+          LOAD_OUTPUT=$(docker load -i ./dist/azure/buyer_frontend_service_image.tar)
           
           # Get the loaded image name (skip the first one which is bidding service)
-          LOADED_IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "${{ env.REGISTRY }}/bidding-service" | head -n 1)
+          LOADED_IMAGE=$(echo "$LOAD_OUTPUT" | grep "Loaded image:" | sed 's/Loaded image: //')
           echo "Loaded image: $LOADED_IMAGE"
           
           # Tag the image with service-specific naming following Azure best practices
-          SERVICE_REPO_NAME="depa-inferencing"
+          SERVICE_REPO_NAME="azure/depa-inferencing"
           
           # Service-specific tag: buyer-frontend-service:non-prod:4.8.0.0
           docker tag $LOADED_IMAGE ${{ env.REGISTRY }}/$SERVICE_REPO_NAME/${{ steps.generate_tags.outputs.buyer_frontend_image}}
