@@ -1,5 +1,10 @@
 name: Update KMS policy
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 on:
   workflow_dispatch:
     inputs:
@@ -13,10 +18,20 @@ on:
         required: true
         type: string
         default: '1.2.0.0'
+      azure-vault-name:
+        description: 'Azure Key Vault'
+        required: true
+        type: string
+        default: 'depa-inferencing-vault'
+      deployment-name:
+        description: 'Azure Confidential Ledger deployment name'
+        required: true
+        type: string
+        default: 'depa-inferencing-kms'
 
 jobs:
   azure-login:
-    runs-on: ubuntu-22.04
+    runs-on: self-hosted
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -32,15 +47,88 @@ jobs:
         run: |
           az extension add --name confcom
 
+      - name: Setup Python virtual environment
+        run: |
+          # Create virtual environment
+          python3 -m venv ccf_env
+          
+          # Activate virtual environment and install CCF
+          source ccf_env/bin/activate
+          pip install --upgrade pip
+          pip install ccf==6.0.10
+                    
+          # Add virtual environment to PATH for subsequent steps
+          echo "ccf_env/bin" >> $GITHUB_PATH
+
       - name: Generate CCE policies for services
         run: |
           # Generate CCE policy for KV service
-          KV_POLICY=$(az confcom acipolicygen -a policies/kv.json --print-policy | base64 --decode | sha256sum)
-          
+          KV_POLICY=$(az confcom acipolicygen -y -a policies/kv.json --print-policy | base64 --decode | sha256sum)
+          echo "KV_POLICY=$KV_POLICY" >> $GITHUB_ENV
+
           # Generate CCE policy for OFE service
-          OFE_POLICY=$(az confcom acipolicygen -a policies/ofe.json --print-policy | base64 --decode | sha256sum)
-          
+          OFE_POLICY=$(az confcom acipolicygen -y -a policies/ofe.json --print-policy | base64 --decode | sha256sum)
+          echo "OFE_POLICY=$OFE_POLICY" >> $GITHUB_ENV
+
           # Generate CCE policy for offer service
-          OFFER_POLICY=$(az confcom acipolicygen -a policies/offer.json --print-policy | base64 --decode | sha256sum)
-          
+          OFFER_POLICY=$(az confcom acipolicygen -y -a policies/offer.json --print-policy | base64 --decode | sha256sum)
+          echo "OFFER_POLICY=$OFFER_POLICY" >> $GITHUB_ENV
+
           echo "CCE policies generated for all services"
+
+      - name: Generate key release policy JSON
+        env: 
+          KV_POLICY: ${{ env.KV_POLICY }}
+          OFE_POLICY: ${{ env.OFE_POLICY }}
+          OFFER_POLICY: ${{ env.OFFER_POLICY }}
+        run: |
+          # Extract just the hash values (remove the filename part from sha256sum output)
+          KV_HASH=$(echo "$KV_POLICY" | cut -d' ' -f1)
+          OFE_HASH=$(echo "$OFE_POLICY" | cut -d' ' -f1)
+          OFFER_HASH=$(echo "$OFFER_POLICY" | cut -d' ' -f1)
+          
+          # Generate the JSON structure
+          cat > $GITHUB_WORKSPACE/key_release_policy.json << EOF
+          {
+            "actions": [
+              {
+                "name": "set_key_release_policy",
+                "args": {
+                  "service": "offer-services",
+                  "type": "add",
+                  "claims": {
+                    "x-ms-sevsnpvm-hostdata": [
+                      "$KV_HASH",
+                      "$OFE_HASH",
+                      "$OFFER_HASH"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+          EOF
+          
+          echo "Key release policy JSON generated: key_release_policy.json"
+          cat $GITHUB_WORKSPACE/key_release_policy.json
+    
+      - name: Sign and submitkey release policy proposal
+        env:
+          AZURE_VAULT_NAME: ${{ inputs.azure-vault-name }}
+          KMS_DEPLOYMENT_NAME: ${{ inputs.deployment-name }}
+          PROPOSAL: ${{ github.workspace }}/key_release_policy.json
+        run: |
+          # Activate the virtual environment
+          source ccf_env/bin/activate
+
+          # Run the signing script
+          ./tools/signing/sign.sh
+
+      - name: Display current key release policy
+        env: 
+          KMS_DEPLOYMENT_NAME: ${{ inputs.deployment-name }}
+        run: | 
+          # Display the key release policy
+          KMS_URL="https://${KMS_DEPLOYMENT_NAME}.confidential-ledger.azure.com"
+          TOKEN=$(az account get-access-token --resource https://confidential-ledger.azure.com | jq -r '.accessToken')
+          curl $KMS_URL/app/keyReleasePolicy -k -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" | jq
