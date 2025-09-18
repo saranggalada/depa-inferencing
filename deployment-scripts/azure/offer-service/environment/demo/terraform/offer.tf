@@ -48,7 +48,7 @@ module "offer" {
     {
       name      = "offer-service"
       image     = "${local.image_registry}/${local.registry_path}/bidding-service:${local.image_tag}"
-      ccepolicy = "${file("../cce-policies/allow_all.base64")}"
+      ccepolicy = "${file("../cce-policies/offer.base64")}"
       replicas  = 1
 
       resources = {
@@ -110,7 +110,7 @@ module "offer" {
     {
       name      = "ofe"
       image     = "${local.image_registry}/${local.registry_path}/buyer-frontend-service:${local.image_tag}"
-      ccepolicy = "${file("../cce-policies/allow_all.base64")}"
+      ccepolicy = "${file("../cce-policies/ofe.base64")}"
       replicas  = 1
 
       resources = {
@@ -155,7 +155,7 @@ module "offer" {
       name      = "kv"
       image     = "${local.image_registry}/${local.registry_path}/key-value-service:${local.kv_image_tag}"
 
-      ccepolicy = "${file("../cce-policies/allow_all.base64")}"
+      ccepolicy = "${file("../cce-policies/kv.base64")}"
       replicas  = 1
       resources = {
         requests = {
@@ -216,11 +216,6 @@ module "offer" {
     PRIMARY_COORDINATOR_REGION               = ""
     PRIVATE_KEY_CACHE_TTL_SECONDS            = "3888000"
     PUBLIC_KEY_ENDPOINT                      = "${local.kms_url}/app/listpubkeys"
-    SFE_PUBLIC_KEYS_ENDPOINTS = " ${replace(jsonencode(
-      {
-        AZURE = "${local.kms_url}/app/listpubkeys"
-      }),
-    ",", "\\,")}"
     TEST_MODE = "false"
     
   }
