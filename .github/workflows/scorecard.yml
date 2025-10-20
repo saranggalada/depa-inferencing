@@ -68,7 +68,7 @@ jobs:
         run: |
           TIMESTAMP=$(date +%Y-%m-%d)
           
-          curl -X POST "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
+          curl -X POST "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -H "accept: application/json" \
             -F "scan_type=SARIF" \
